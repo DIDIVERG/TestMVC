@@ -1,0 +1,41 @@
+version: "3.4"
+
+networks:
+  back-bd:
+    driver: bridge
+
+services:
+  back-api:
+    image: divergent7/murano-mvc
+    build:
+      context: . 
+      dockerfile: MuranoMVC/Dockerfile
+    container_name: backend
+    expose:
+      - 5000
+    ports:
+      - "8000:5000"
+    environment:
+      - ConnectionStrings__Default=Server=db;User Id=sa;Password=YourPassword123!;Database=murano_test_db;
+      - ASPNETCORE_ENVIRONMENT=Development
+    networks:
+      - back-bd
+    restart: unless-stopped
+    depends_on:
+      - db
+  db: 
+    image: mcr.microsoft.com/mssql/server:2022-latest
+    container_name: SQL Server
+    ports:
+      - "1433:1433"
+    restart: unless-stopped
+    networks:
+      - back-bd
+    environment:
+      - SA_PASSWORD=password
+      - ACCEPT_EULA=Y
+    volumes:
+      - app_data:/var/lib/sqlserver/data       
+volumes:
+  app_data:  
+         
