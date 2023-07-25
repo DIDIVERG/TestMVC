@@ -10,13 +10,13 @@ services:
     build:
       context: . 
       dockerfile: MuranoMVC/Dockerfile
-    container_name: backend
+    container_name: mvc
     expose:
       - 5000
     ports:
       - "8000:5000"
     environment:
-      - ConnectionStrings__Default=Server=db;User Id=sa;Password=YourPassword123!;Database=murano_test_db;
+      - ConnectionStrings__Default=Server=db;Database=murano_db;User Id=sa;Password=YourPassword123!;TrustServerCertificate=true;
       - ASPNETCORE_ENVIRONMENT=Development
     networks:
       - back-bd
@@ -24,15 +24,15 @@ services:
     depends_on:
       - db
   db: 
-    image: mcr.microsoft.com/mssql/server:2022-latest
-    container_name: SQL Server
+    image: mcr.microsoft.com/mssql/server:latest
+    container_name: SQLServer
     ports:
       - "1433:1433"
     restart: unless-stopped
     networks:
       - back-bd
     environment:
-      - SA_PASSWORD=password
+      - SA_PASSWORD=YourPassword123!
       - ACCEPT_EULA=Y
     volumes:
       - app_data:/var/lib/sqlserver/data       

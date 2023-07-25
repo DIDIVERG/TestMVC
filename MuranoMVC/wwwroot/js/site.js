@@ -1,112 +1,72 @@
-﻿// Please see documentation at https://docs.microsoft.com/aspnet/core/client-side/bundling-and-minification
-// for details on configuring this project to bundle and minify static web assets.
-
-// Write your JavaScript code.
-
-// site.js
-
-// Define an array to store the words
-let wordsArray = [];
-
-// Function to add a word to the array
+﻿// JavaScript-функция для добавления слова в список
 function addWord() {
-    const wordInput = document.getElementById('wordInput');
-    const word = wordInput.value.trim();
-    if (word !== '') {
-        wordsArray.push(word);
-        wordInput.value = '';
-        refreshWordList();
-        enableSendButton();
+
+    var inputWord = document.getElementById('inputWord');
+    var wordList = document.getElementById('wordList');
+    var listItem = document.createElement('li');
+    listItem.innerHTML = inputWord.value + ' <button onclick="editWord(\'' + inputWord.value + '\')">Изменить</button>' +
+        ' <button onclick="deleteWord(\'' + inputWord.value + '\')">Удалить</button>';
+    wordList.appendChild(listItem);
+    inputWord.value = '';
+}
+
+// JavaScript-функция для удаления слова из списка
+function deleteWord(word) {
+    var wordList = document.getElementById('wordList');
+    var listItems = wordList.getElementsByTagName('li');
+    for (var i = 0; i < listItems.length; i++) {
+        if (listItems[i].textContent.includes(word)) {
+            wordList.removeChild(listItems[i]);
+            break;
+        }
     }
 }
 
-// Function to edit a word in the array
-function editWord(index) {
-    const newWord = prompt('Enter the new word:');
-    if (newWord !== null && newWord.trim() !== '') {
-        wordsArray[index] = newWord.trim();
-        refreshWordList();
+// JavaScript-функция для изменения слова в списке
+function editWord(word) {
+    var newWord = prompt('Введите новое значение для слова', word);
+    if (newWord !== null) {
+        var wordList = document.getElementById('wordList');
+        var listItems = wordList.getElementsByTagName('li');
+        for (var i = 0; i < listItems.length; i++) {
+            if (listItems[i].textContent.includes(word)) {
+                listItems[i].innerHTML = newWord + ' <button onclick="editWord(\'' + newWord + '\')">Изменить</button>' +
+                    ' <button onclick="deleteWord(\'' + newWord + '\')">Удалить</button>';
+                break;
+            }
+        }
     }
 }
 
-// Function to delete a word from the array
-function deleteWord(index) {
-    wordsArray.splice(index, 1);
-    refreshWordList();
-    if (wordsArray.length === 0) {
-        disableSendButton();
-    }
-}
-
-// Function to refresh the word list in the HTML
-function refreshWordList() {
-    const wordListDiv = document.getElementById('wordList');
-    wordListDiv.innerHTML = '';
-
-    for (let i = 0; i < wordsArray.length; i++) {
-        const word = wordsArray[i];
-        const div = document.createElement('div');
-
-        const span = document.createElement('span');
-        span.innerText = word;
-        div.appendChild(span);
-
-        const editButton = document.createElement('button');
-        editButton.innerText = 'Изменить';
-        editButton.className = 'btn-outline-primary';
-        editButton.onclick = () => editWord(i);
-        div.appendChild(editButton);
-
-        const deleteButton = document.createElement('button');
-        deleteButton.innerText = 'Удалить';
-        deleteButton.className = 'btn-danger';
-        deleteButton.onclick = () => deleteWord(i);
-        div.appendChild(deleteButton);
-
-        wordListDiv.appendChild(div);
-    }
-}
-
-// Function to enable the "Отправить" (Send) button
-function enableSendButton() {
-    const sendButton = document.getElementById('sendButton');
-    sendButton.disabled = false;
-}
-
-// Function to disable the "Отправить" (Send) button
-function disableSendButton() {
-    const sendButton = document.getElementById('sendButton');
-    sendButton.disabled = true;
-}
-
-// Function to send the words array to the controller
+// JavaScript-функция для отправки слов на сервер
 function sendWords() {
-    const sendButton = document.getElementById('sendButton');
-    sendButton.disabled = true; // Disable the button to prevent multiple clicks
+    var words = [];
+    var wordList = document.getElementById('wordList');
+    var listItems = wordList.getElementsByTagName('li');
+    for (var i = 0; i < listItems.length; i++) {
+        var word = listItems[i].textContent.split(' ')[0];
+        words.push(word);
+    }
 
-    fetch('/Search/SendWords', {
+    // Отправляем данные на сервер с помощью fetch API
+    fetch('/SendWords', {
         method: 'POST',
         headers: {
             'Content-Type': 'application/json'
         },
-        body: JSON.stringify(wordsArray)
+        body: JSON.stringify(words)
     })
-        .then(response => {
-            if (response.ok) {
-                wordsArray = []; // Clear the array after successful submission
-                refreshWordList();
-                disableSendButton();
-            } else {
-                // Handle the error if needed
-                console.error('Failed to send words to the server.');
-                enableSendButton();
+        .then(response => response.json())
+        .then(data => {
+            var searchResultsDiv = document.getElementById('searchResults');
+            searchResultsDiv.innerHTML = '';
+            if (data != null) {
+                data.forEach(result => {
+                    var pElement = document.createElement('p');
+                    pElement.innerHTML = '<a href="' + result.url + '">' + result.url + '</a><br />' + result.snippet;
+                    searchResultsDiv.appendChild(pElement);
+                });
             }
         })
-        .catch(error => {
-            console.error('Error while sending words:', error);
-            enableSendButton();
-        });
+        .catch(error => console.error('Ошибка:', error));
 }
-
-
-

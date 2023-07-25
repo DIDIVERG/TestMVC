@@ -1,6 +1,8 @@
-﻿using Microsoft.AspNetCore.Mvc;
+﻿using AutoMapper;
+using Microsoft.AspNetCore.Mvc;
 using WebApplication10.DataAccessLayer;
 using WebApplication10.DataAccessLayer.Models;
+using WebApplication10.DTOs;
 using WebApplication10.Services.Interfaces;
 using WebApplication10.Views.Search.ViewModels;
 
@@ -13,26 +15,30 @@ public class SearchController : Controller
     private readonly IBingService _bingService;
     private readonly IQueryService _queryService;
     private readonly IHashService _hashService;
+    private readonly IMapper _mapper;
     public SearchController(IYandexService yandexService, IGoogleService googleService, 
         IBingService bingService, IQueryService queryService, 
-        IHashService hashService)
+        IHashService hashService, IMapper mapper)
     {
         _yandexService = yandexService;
         _googleService = googleService;
         _bingService = bingService;
         _queryService = queryService;
         _hashService = hashService;
+        _mapper = mapper;
     }
     
     public IActionResult Index()
     {
         var viewModel = new SearchViewModel
         {
+            Words = new List<string>(),
+            SearchResults = null // Set the SearchResults to null or any initial value as needed.
         };
         return View(viewModel);
     }
     
-    [HttpPost]
+    [HttpPost("SendWords")]
     public async Task<IActionResult> SendWords([FromBody] List<string> keywords)
     {
         var hash = _hashService.GetHash(keywords);
@@ -65,11 +71,13 @@ public class SearchController : Controller
                 new Query { QueryKeywordHash = hash, Results = searchResults }
             });
         }
+        ViewBag.SearchResults = _mapper.Map<IEnumerable<SearchResultDto>>(searchResults);
         var viewModel = new SearchViewModel
         {
             Words = new List<string>(),
-            SearchResults = searchResults
+            SearchResults = _mapper.Map<IEnumerable<SearchResultDto>>(searchResults)
         };
-        return View("Index", viewModel);
+        
+        return Ok(_mapper.Map<IEnumerable<SearchResultDto>>(searchResults));
     }
 }

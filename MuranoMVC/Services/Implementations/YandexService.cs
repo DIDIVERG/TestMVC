@@ -5,7 +5,6 @@ using WebApplication10.DataAccessLayer.Models;
 using WebApplication10.Services.Interfaces;
 
 namespace WebApplication10.Services.Implementations;
-// ПОКА НЕ ПАШЕТ СУКА
 public class YandexService : BaseSearcher, IYandexService
 {
     private readonly IConfiguration _configuration;

@@ -1,40 +1,42 @@
-﻿@using Microsoft.AspNetCore.Mvc.TagHelpers
-@model WebApplication10.Views.Search.ViewModels.SearchViewModel
+﻿@model WebApplication10.Views.Search.ViewModels.SearchViewModel
 
-<div class="container-fluid" style="background-color: beige; height: 300px; text-align: center; padding-top: 50px;">
-    <div>
-        <input id="wordInput" type="text" />
-        <button onclick="addWord()" class="btn btn-primary">Добавить слово</button>
-    </div>
+<h1>Поиск слов</h1>
 
-    <div id="wordList">
-        @for (var i = 0; i < Model.Words.Count; i++)
-        {
-            <div>
-                <span>@Model.Words[i]</span>
-                <button onclick="editWord(@i)" class="btn-outline-primary">Изменить</button>
-                <button onclick="deleteWord(@i)" class="btn-danger">Удалить</button>
-            </div>
-        }
-    </div>
-    <div class="container">
-        <h3>Результаты поиска:</h3>
-        <ul>
-            @foreach (var result in Model.SearchResults)
-            {
-                <li>
-                    <a href="@result.Url" target="_blank">@result.Url</a><br />
-                    <span>@result.Snippet</span>
-                </li>
-            }
-        </ul>
-    </div>
-   <form id="sendWordsForm" method="post">
-       <button id="sendButton" type="button" class="btn btn-success" disabled onclick="sendWords()">Отправить</button>
-   </form>
+<div>
+    <input type="text" id="inputWord" />
+    <button onclick="addWord()">Добавить</button>
 </div>
-  
-@section Scripts {
-    <script src="js/site.js">
-    </script>
-}
+
+<ul id="wordList">
+    @foreach (var word in Model.Words)
+    {
+        <li>
+            @word
+            <button onclick="editWord('@word')">Изменить</button>
+            <button onclick="deleteWord('@word')">Удалить</button>
+        </li>
+    }
+</ul>
+
+<div>
+    <button onclick="sendWords()">Отправить</button>
+</div>
+
+<h2>Результаты поиска</h2>
+
+<div id="searchResults">
+    @if (Model.SearchResults != null)
+    {
+        foreach (var result in Model.SearchResults)
+        {
+            <p>
+                <a href="@result.Url">@result.Url</a><br />
+                @result.Snippet
+            </p>
+        }
+    }
+</div>
+
+<script>
+    
+</script>
